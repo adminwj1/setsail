@@ -16,7 +16,7 @@ import (
 	"projecthub/pkg/jwt"
 
 	"github.com/casbin/casbin/v3"
-	"github.com/casbin/gorm-adapter/v3"
+	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -138,18 +138,19 @@ func initDefaultData() error {
 	}
 
 	menus := []model.Menu{
-		{ID: 1, ParentID: 0, Name: "系统管理", Code: "system", Path: "", ApiPath: "", Icon: "setting", Type: 1, Sort: 1, Status: 1},
+		{ID: 1, ParentID: 0, Name: "系统管理", Code: "system", Path: "", ApiPath: "", Icon: "setting", Type: 1, Sort: 3, Status: 1},
 		{ID: 2, ParentID: 1, Name: "用户管理", Code: "user:list", Path: "/system/user", ApiPath: "/api/users", Icon: "user", Type: 2, Sort: 1, Status: 1},
 		{ID: 3, ParentID: 1, Name: "角色管理", Code: "role:list", Path: "/system/role", ApiPath: "/api/roles", Icon: "role", Type: 2, Sort: 2, Status: 1},
 		{ID: 4, ParentID: 1, Name: "菜单管理", Code: "menu:list", Path: "/system/menu", ApiPath: "/api/menus", Icon: "menu", Type: 2, Sort: 3, Status: 1},
-		{ID: 5, ParentID: 0, Name: "产品管理", Code: "product", Path: "", ApiPath: "", Icon: "product", Type: 1, Sort: 2, Status: 1},
+		{ID: 5, ParentID: 0, Name: "产品管理", Code: "product", Path: "", ApiPath: "", Icon: "product", Type: 1, Sort: 1, Status: 1},
 		{ID: 6, ParentID: 5, Name: "产品列表", Code: "product:list", Path: "/product/list", ApiPath: "/api/products", Icon: "list", Type: 2, Sort: 1, Status: 1},
-		{ID: 7, ParentID: 0, Name: "需求管理", Code: "requirement", Path: "", ApiPath: "", Icon: "requirement", Type: 1, Sort: 3, Status: 1},
+		{ID: 7, ParentID: 0, Name: "需求管理", Code: "requirement", Path: "", ApiPath: "", Icon: "requirement", Type: 1, Sort: 2, Status: 1},
 		{ID: 8, ParentID: 7, Name: "需求列表", Code: "requirement:list", Path: "/requirement/list", ApiPath: "/api/requirements", Icon: "list", Type: 2, Sort: 1, Status: 1},
 	}
 
 	for _, m := range menus {
 		if err := database.DB.Create(&m).Error; err != nil {
+			fmt.Printf("err: %v\n", err)
 			return err
 		}
 	}

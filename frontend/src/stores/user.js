@@ -1,12 +1,15 @@
 import { defineStore } from 'pinia'
 import { login, getUserInfo, logout } from '@/api/auth'
 import { getMenus } from '@/api/menu'
+import { addDynamicRoutes, resetDynamicRoutes } from '@/router'
+
+const MENUS_KEY = 'menus'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
     token: localStorage.getItem('token') || '',
     userInfo: null,
-    menus: []
+    menus: JSON.parse(localStorage.getItem(MENUS_KEY) || '[]')
   }),
 
   getters: {
@@ -37,8 +40,17 @@ export const useUserStore = defineStore('user', {
       const res = await getMenus()
       if (res.code === 200) {
         this.menus = res.data || []
+        localStorage.setItem(MENUS_KEY, JSON.stringify(this.menus))
+        addDynamicRoutes(this.menus)
       }
       return this.menus
+    },
+
+    // 从本地存储恢复路由
+    restoreRoutes() {
+      if (this.menus && this.menus.length > 0) {
+        addDynamicRoutes(this.menus)
+      }
     },
 
     async logout() {
@@ -47,6 +59,8 @@ export const useUserStore = defineStore('user', {
       this.userInfo = null
       this.menus = []
       localStorage.removeItem('token')
+      localStorage.removeItem(MENUS_KEY)
+      resetDynamicRoutes()
     }
   }
 })

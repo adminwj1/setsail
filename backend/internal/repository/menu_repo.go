@@ -52,6 +52,7 @@ func (r *MenuRepository) FindMenusByRoleIDs(roleIDs []uint) ([]model.Menu, error
 		Where("sys_menu.status = 1").
 		Order("sys_menu.sort asc").
 		Find(&menus).Error
+	// fmt.Printf("menus: %v\n", menus)
 	return menus, err
 }
 
@@ -87,9 +88,17 @@ func (r *MenuRepository) Delete(id uint) error {
 	})
 }
 
+// BuildTree 将扁平菜单列表构建为树形结构
+// 实现逻辑：
+//  1. 第一轮遍历：初始化所有菜单的 Children 为空切片，并建立 ID -> 菜单指针 的映射表（menuMap）
+//  2. 第二轮遍历：
+//     - 如果 ParentID == 0，说明是根节点，将其指针加入 roots
+//     - 否则，通过 menuMap 找到父节点，将当前菜单加入父节点的 Children
+//     - 由于使用的是指针操作，对 menuMap 中父节点 Children 的修改会反映到原始 menus 数组
+//  3. 最后将 roots（指针切片）转换为值拷贝切片返回，避免对外暴露内部指针
 func (r *MenuRepository) BuildTree(menus []model.Menu) []model.Menu {
 	menuMap := make(map[uint]*model.Menu)
-	var roots []model.Menu
+	var roots []*model.Menu
 
 	for i := range menus {
 		menus[i].Children = []model.Menu{}
@@ -98,7 +107,7 @@ func (r *MenuRepository) BuildTree(menus []model.Menu) []model.Menu {
 
 	for i := range menus {
 		if menus[i].ParentID == 0 {
-			roots = append(roots, menus[i])
+			roots = append(roots, &menus[i])
 		} else {
 			if parent, ok := menuMap[menus[i].ParentID]; ok {
 				parent.Children = append(parent.Children, menus[i])
@@ -106,5 +115,10 @@ func (r *MenuRepository) BuildTree(menus []model.Menu) []model.Menu {
 		}
 	}
 
-	return roots
+	// 转换为值拷贝的切片返回
+	result := make([]model.Menu, len(roots))
+	for i, r := range roots {
+		result[i] = *r
+	}
+	return result
 }

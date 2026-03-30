@@ -132,119 +132,12 @@ func (r *Router) Setup() *gin.Engine {
 
 // InitCasbin 初始化Casbin策略
 func InitCasbin(e *casbin.Enforcer) error {
-	// 添加默认策略：超级管理员拥有所有权限
-	_, err := e.AddPolicy("1", "/api/menus", "GET")
-	if err != nil {
-		return err
+	// 添加默认策略：超级管理员(roleID=1)拥有所有路由权限
+	for _, route := range Routes {
+		_, err := e.AddPolicy("1", route.Path, route.Method)
+		if err != nil {
+			return err
+		}
 	}
-	_, err = e.AddPolicy("1", "/api/menus/:id", "GET")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/menus", "POST")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/menus/:id", "PUT")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/menus/:id", "DELETE")
-	if err != nil {
-		return err
-	}
-
-	_, err = e.AddPolicy("1", "/api/roles", "GET")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/roles/:id", "GET")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/roles", "POST")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/roles/:id", "PUT")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/roles/:id", "DELETE")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/roles/:id/menus", "GET")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/roles/:id/menus", "POST")
-	if err != nil {
-		return err
-	}
-
-	_, err = e.AddPolicy("1", "/api/users", "GET")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/users", "POST")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/users/:id", "PUT")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/users/:id", "DELETE")
-	if err != nil {
-		return err
-	}
-
-	_, err = e.AddPolicy("1", "/api/products", "GET")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/products/:id", "GET")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/products", "POST")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/products/:id", "PUT")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/products/:id", "DELETE")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/products/:id/requirements", "GET")
-	if err != nil {
-		return err
-	}
-
-	_, err = e.AddPolicy("1", "/api/requirements", "GET")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/requirements/:id", "GET")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/requirements", "POST")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/requirements/:id", "PUT")
-	if err != nil {
-		return err
-	}
-	_, err = e.AddPolicy("1", "/api/requirements/:id", "DELETE")
-	if err != nil {
-		return err
-	}
-
 	return nil
 }

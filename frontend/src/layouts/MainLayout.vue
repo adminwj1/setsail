@@ -18,30 +18,23 @@
           <span>首页</span>
         </el-menu-item>
 
-        <el-sub-menu index="system" v-if="hasMenu('/system')">
+        <el-sub-menu
+          v-for="menu in menus"
+          :key="menu.id"
+          :index="String(menu.id)"
+        >
           <template #title>
-            <el-icon><Setting /></el-icon>
-            <span>系统管理</span>
+            <el-icon><component :is="getIcon(menu.icon)" /></el-icon>
+            <span>{{ menu.name }}</span>
           </template>
-          <el-menu-item index="/system/user" v-if="hasMenu('/system/user')">用户管理</el-menu-item>
-          <el-menu-item index="/system/role" v-if="hasMenu('/system/role')">角色管理</el-menu-item>
-          <el-menu-item index="/system/menu" v-if="hasMenu('/system/menu')">菜单管理</el-menu-item>
-        </el-sub-menu>
-
-        <el-sub-menu index="product" v-if="hasMenu('/product')">
-          <template #title>
-            <el-icon><Goods /></el-icon>
-            <span>产品管理</span>
-          </template>
-          <el-menu-item index="/product/list">产品列表</el-menu-item>
-        </el-sub-menu>
-
-        <el-sub-menu index="requirement" v-if="hasMenu('/requirement')">
-          <template #title>
-            <el-icon><Document /></el-icon>
-            <span>需求管理</span>
-          </template>
-          <el-menu-item index="/requirement/list">需求列表</el-menu-item>
+          <el-menu-item
+            v-for="child in (menu.children || [])"
+            :key="child.id"
+            :index="child.path"
+          >
+            <el-icon><component :is="getIcon(child.icon)" /></el-icon>
+            <span>{{ child.name }}</span>
+          </el-menu-item>
         </el-sub-menu>
       </el-menu>
     </el-aside>
@@ -80,36 +73,38 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, markRaw } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import {
+  Box,
+  Odometer,
+  Setting,
+  User,
+  ArrowDown,
+  Goods,
+  Document,
+  Menu as MenuIcon
+} from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 
+const menus = computed(() => userStore.menus || [])
 const activeMenu = computed(() => route.path)
 
-const hasMenu = (path) => {
-  if (!userStore.menus || userStore.menus.length === 0) return true
-  const flatMenus = flatMenuTree(userStore.menus)
-  return flatMenus.some(m => m.path === path)
+const iconMap = {
+  'setting': markRaw(Setting),
+  'user': markRaw(User),
+  'goods': markRaw(Goods),
+  'document': markRaw(Document),
+  'menu': markRaw(MenuIcon),
+  'Odometer': markRaw(Odometer)
 }
 
-const flatMenuTree = (menus) => {
-  const result = []
-  const traverse = (items) => {
-    items.forEach(item => {
-      if (item.path) {
-        result.push(item)
-      }
-      if (item.children && item.children.length) {
-        traverse(item.children)
-      }
-    })
-  }
-  traverse(menus)
-  return result
+const getIcon = (iconName) => {
+  return iconMap[iconName] || markRaw(Setting)
 }
 
 const handleCommand = async (command) => {

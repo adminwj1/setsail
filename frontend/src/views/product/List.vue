@@ -25,7 +25,7 @@
         </el-table-column>
         <el-table-column label="负责人" width="120">
           <template #default="{ row }">
-            {{ row.owner?.nickname || '-' }}
+            {{ row.owner?.nickname || "-" }}
           </template>
         </el-table-column>
         <el-table-column prop="created_at" label="创建时间" width="180" />
@@ -63,6 +63,10 @@
         <el-form-item label="产品代号" prop="code">
           <el-input v-model="form.code" placeholder="请输入产品代号" />
         </el-form-item>
+
+        <el-form-item label="负责人" prop="owner">
+          <el-input v-model="form.owner" rows="3" />
+        </el-form-item>
         <el-form-item label="描述" prop="description">
           <el-input v-model="form.description" type="textarea" rows="3" />
         </el-form-item>
@@ -84,126 +88,138 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { getProductList, createProduct, updateProduct, deleteProduct } from '@/api/product'
+import { ref, reactive, onMounted } from "vue";
+import { ElMessage, ElMessageBox } from "element-plus";
+import {
+  getProductList,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} from "@/api/product";
 
-const loading = ref(false)
-const tableData = ref([])
-const dialogVisible = ref(false)
-const dialogTitle = ref('新建产品')
-const isEdit = ref(false)
-const formRef = ref()
+const loading = ref(false);
+const tableData = ref([]);
+const dialogVisible = ref(false);
+const dialogTitle = ref("新建产品");
+const isEdit = ref(false);
+const formRef = ref();
 
 const pagination = reactive({
   page: 1,
   pageSize: 10,
-  total: 0
-})
+  total: 0,
+});
 
 const form = reactive({
   id: null,
-  name: '',
-  code: '',
-  description: '',
-  status: 0
-})
+  name: "",
+  code: "",
+  description: "",
+  status: 0,
+});
 
 const rules = {
-  name: [{ required: true, message: '请输入产品名称', trigger: 'blur' }],
-  code: [{ required: true, message: '请输入产品代号', trigger: 'blur' }]
-}
+  name: [{ required: true, message: "请输入产品名称", trigger: "blur" }],
+  code: [{ required: true, message: "请输入产品代号", trigger: "blur" }],
+  owner: [
+    {
+      required: true,
+      message: "请选择对应的负责人",
+      trigger: "blur",
+    },
+  ],
+};
 
 const statusMap = {
-  0: { name: '规划中', type: 'info' },
-  1: { name: '开发中', type: 'warning' },
-  2: { name: '上线', type: 'success' },
-  3: { name: '下线', type: 'danger' }
-}
+  0: { name: "规划中", type: "info" },
+  1: { name: "开发中", type: "warning" },
+  2: { name: "上线", type: "success" },
+  3: { name: "下线", type: "danger" },
+};
 
-const getStatusName = (status) => statusMap[status]?.name || '未知'
-const getStatusType = (status) => statusMap[status]?.type || 'info'
+const getStatusName = (status) => statusMap[status]?.name || "未知";
+const getStatusType = (status) => statusMap[status]?.type || "info";
 
 const fetchData = async () => {
-  loading.value = true
+  loading.value = true;
   try {
     const res = await getProductList({
       page: pagination.page,
-      pageSize: pagination.pageSize
-    })
-    tableData.value = res.data.list || []
-    pagination.total = res.data.total || 0
+      pageSize: pagination.pageSize,
+    });
+    tableData.value = res.data.list || [];
+    pagination.total = res.data.total || 0;
   } catch (error) {
-    console.error('Failed to fetch products:', error)
+    console.error("Failed to fetch products:", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const handleCreate = () => {
-  dialogTitle.value = '新建产品'
-  isEdit.value = false
-  Object.assign(form, { id: null, name: '', code: '', description: '', status: 0 })
-  dialogVisible.value = true
-}
+  dialogTitle.value = "新建产品";
+  isEdit.value = false;
+  Object.assign(form, { id: null, name: "", code: "", description: "", status: 0 });
+  dialogVisible.value = true;
+};
 
 const handleEdit = (row) => {
-  dialogTitle.value = '编辑产品'
-  isEdit.value = true
+  dialogTitle.value = "编辑产品";
+  isEdit.value = true;
   Object.assign(form, {
     id: row.id,
     name: row.name,
     code: row.code,
     description: row.description,
-    status: row.status
-  })
-  dialogVisible.value = true
-}
+    status: row.status,
+  });
+  dialogVisible.value = true;
+};
 
 const handleDelete = async (row) => {
   try {
-    await ElMessageBox.confirm('确定删除该产品吗？', '提示', {
-      type: 'warning'
-    })
-    await deleteProduct(row.id)
-    ElMessage.success('删除成功')
-    fetchData()
+    await ElMessageBox.confirm("确定删除该产品吗？", "提示", {
+      type: "warning",
+    });
+    await deleteProduct(row.id);
+    ElMessage.success("删除成功");
+    fetchData();
   } catch (error) {
-    if (error !== 'cancel') {
-      console.error('Failed to delete product:', error)
+    if (error !== "cancel") {
+      console.error("Failed to delete product:", error);
     }
   }
-}
+};
 
 const handleSubmit = async () => {
-  if (!formRef.value) return
+  if (!formRef.value) return;
 
   await formRef.value.validate(async (valid) => {
     if (valid) {
       try {
         if (isEdit.value) {
-          await updateProduct(form.id, form)
-          ElMessage.success('更新成功')
+          await updateProduct(form.id, form);
+          ElMessage.success("更新成功");
         } else {
-          await createProduct(form)
-          ElMessage.success('创建成功')
+          await createProduct(form);
+          ElMessage.success("创建成功");
         }
-        dialogVisible.value = false
-        fetchData()
+        dialogVisible.value = false;
+        fetchData();
       } catch (error) {
-        console.error('Failed to submit:', error)
+        console.error("Failed to submit:", error);
       }
     }
-  })
-}
+  });
+};
 
 const handleDialogClose = () => {
-  formRef.value?.resetFields()
-}
+  formRef.value?.resetFields();
+};
 
 onMounted(() => {
-  fetchData()
-})
+  fetchData();
+});
 </script>
 
 <style scoped lang="scss">
